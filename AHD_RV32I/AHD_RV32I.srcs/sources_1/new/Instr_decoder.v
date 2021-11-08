@@ -4,29 +4,55 @@
 
 module Instr_decoder(
     input wire clk,
-    input wire[31:0] instr
+    input wire[31:0] instr,
+    
+    output reg ALU_op,
+    output reg RFile_wr_src_sel, 
+    output reg DMem_wr_en,
+    output reg ALU_src2_sel,
+    output reg src1_addr,
+    output reg src2_addr,
+    output reg dest_addr,    
+    output reg[19:0] Imm_out,
+    output reg extend
     );
+/*  reg ALU_op,
+    reg RFile_wr_src_sel, 
+    reg DMem_wr_en,
+    reg ALU_src2_sel,
+    reg src1_addr,
+    reg src2_addr,
+    reg dest_addr,    
+    reg[19:0] Imm_out*/
+       
     
     always @* begin
      case(instr[6:0])
       //R type instruction
       7'b0110011:begin
+                  //datapath values
+                  src1_addr = instr[19:15];
+                  src2_addr = instr[24:20];
+                  dest_addr = instr[11:07]; 
+                  //control values
                   case(instr[14:12])
                    3'b000:begin
                            //subtraction 
                            if(instr[30])begin
+                            ALU_op = 4'b1001;
                             end
                            //addition 
                            else begin
+                            ALU_op = 4'b0000;
                             end
                           end 
                    //SLL       
                    3'b001:begin 
-                          
+                           
                           end  
                    //SLT       
                    3'b010:begin 
-                          
+                           
                           end
                    //SLTU       
                    3'b011:begin 
@@ -34,7 +60,7 @@ module Instr_decoder(
                           end
                    //XOR       
                    3'b100:begin 
-                          
+                           ALU_op = 4'b0100;
                           end
                    //SRL SRA     
                    3'b100:begin 
@@ -47,20 +73,23 @@ module Instr_decoder(
                           end
                    //OR       
                    3'b110:begin 
-                          
+                           ALU_op = 4'b0110;
                           end
                    //AND       
                    3'b111:begin 
-                          
+                          ALU_op = 4'b0111;
                           end                                   
                   endcase
                  end
       //I type instruction           
       7'b0010011:begin
+                  src1_addr = instr[19:15];
+                  Imm_out = instr[31:20];
+                  dest_addr = instr[11:07];
                   case(instr[14:12])
                    //ADDI
                    3'b000:begin
-                           
+                          ALU_op = 4'b0000;
                           end 
                    //SLLI       
                    3'b001:begin 
@@ -76,7 +105,7 @@ module Instr_decoder(
                           end
                    //XORI       
                    3'b100:begin 
-                          
+                          ALU_op = 4'b0100; 
                           end
                    //SRLI SRAI     
                    3'b100:begin 
@@ -89,16 +118,17 @@ module Instr_decoder(
                           end
                    //ORI       
                    3'b110:begin 
-                          
+                          ALU_op = 4'b0110;
                           end
                    //ANDI       
                    3'b111:begin 
-                          
+                          ALU_op = 4'b0111;
                           end                                   
                   endcase
                  end
       //I type load instruction           
       7'b0000011:begin
+                 
                  case(instr[14:12])
                   //LB
                   3'b000:begin
@@ -119,6 +149,9 @@ module Instr_decoder(
                  end
       //S type instruction   
       7'b0100011:begin
+                 src1_addr = instr[19:15];
+                 src2_addr = instr[24:20];
+                 Imm_out = {instr[31:25],instr[11:07]};
                  case(instr[14:12])
                   //SB
                   3'b000:begin
@@ -134,6 +167,9 @@ module Instr_decoder(
                  end
       //B type instruction   
       7'b1100011:begin
+                 src1_addr = instr[19:15];
+                 src2_addr = instr[24:20];
+                 Imm_out = {instr[31],instr[7],instr[30:25],instr[11:08]};                  
                   case(instr[14:12])
                   //BEQ
                   3'b000:begin
