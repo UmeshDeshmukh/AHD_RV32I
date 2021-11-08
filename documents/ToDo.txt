@@ -1,0 +1,9 @@
+Things to consider/contemplate:
+
+Need of externder of load data of different sizes?
+signed arithmetic in ALU, comparison addition etc.
+clocked/unclocked modules.
+byte/word adressing between compute and memory.
+LUI/AUIPC implementation.
+Additional MUX for RFile Rd data input connection from PC+4.
+

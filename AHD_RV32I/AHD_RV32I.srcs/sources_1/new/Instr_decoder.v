@@ -7,24 +7,20 @@ module Instr_decoder(
     input wire[31:0] instr,
     
     output reg ALU_op,
-    output reg RFile_wr_src_sel, 
-    output reg DMem_wr_en,
+    output reg branch, 
     output reg ALU_src2_sel,
+    output reg Rd_data_src_sel,
+    output reg DMem_wr_en,
+    
     output reg src1_addr,
     output reg src2_addr,
     output reg dest_addr,    
     output reg[19:0] Imm_out,
+    output reg[31:0] U_imm_out,
     output reg extend
     );
-/*  reg ALU_op,
-    reg RFile_wr_src_sel, 
-    reg DMem_wr_en,
-    reg ALU_src2_sel,
-    reg src1_addr,
-    reg src2_addr,
-    reg dest_addr,    
-    reg[19:0] Imm_out*/
-       
+    reg[11:0] Imm;
+      
     
     always @* begin
      case(instr[6:0])
@@ -35,6 +31,9 @@ module Instr_decoder(
                   src2_addr = instr[24:20];
                   dest_addr = instr[11:07]; 
                   //control values
+                  ALU_src2_sel = 0;
+                  Rd_data_src_sel = 0;
+                  branch = 0;
                   case(instr[14:12])
                    3'b000:begin
                            //subtraction 
@@ -83,9 +82,14 @@ module Instr_decoder(
                  end
       //I type instruction           
       7'b0010011:begin
+                  //datapath values
                   src1_addr = instr[19:15];
                   Imm_out = instr[31:20];
-                  dest_addr = instr[11:07];
+                  dest_addr = instr[11:07];                                   
+                  //control values
+                  ALU_src2_sel = 1;
+                  Rd_data_src_sel = 0;
+                  branch = 0;
                   case(instr[14:12])
                    //ADDI
                    3'b000:begin
@@ -128,7 +132,14 @@ module Instr_decoder(
                  end
       //I type load instruction           
       7'b0000011:begin
-                 
+                 //datapath values
+                  src1_addr = instr[19:15];
+                  Imm_out = instr[31:20];
+                  dest_addr = instr[11:07];                                   
+                  //control values
+                  ALU_src2_sel = 1;
+                  Rd_data_src_sel = 0;
+                  branch = 0;
                  case(instr[14:12])
                   //LB
                   3'b000:begin
@@ -169,44 +180,65 @@ module Instr_decoder(
       7'b1100011:begin
                  src1_addr = instr[19:15];
                  src2_addr = instr[24:20];
-                 Imm_out = {instr[31],instr[7],instr[30:25],instr[11:08]};                  
+                 Imm_out = {instr[31],instr[7],instr[30:25],instr[11:08]};  
+                 //control values
+                  ALU_src2_sel = 0;
+                  Rd_data_src_sel = 0;
+                  branch = 1;                
                   case(instr[14:12])
                   //BEQ
                   3'b000:begin
+                         ALU_op = 4'bXXXX;
                          end
                   //BNE
                   3'b001:begin
+                         ALU_op = 4'bXXXX;
                          end
                   //BLT
                   3'b100:begin
+                         ALU_op = 4'bXXXX;
                          end
                   //BGE
                   3'b101:begin
+                         ALU_op = 4'bXXXX;
                          end
                   //BLTU
                   3'b110:begin
+                         ALU_op = 4'bXXXX;
                          end
                   //BGEU
                   3'b111:begin
+                         ALU_op = 4'bXXXX;
                          end                            
                  endcase
                 
                  end
       //U type instruction1  LUI         
       7'b0110111:begin
-                
+                 dest_addr = instr[11:07];
+                 U_imm_out = {instr[31:12],{12{0}}};  
+                 //control values
+                 ALU_src2_sel = 0;
+                 Rd_data_src_sel = 0;
+                 branch = 0;
+                 
                  end
       //U type instruction2  AUIPC         
       7'b0010111:begin
-                
+                 dest_addr = instr[11:07];
+                 U_imm_out = {instr[31:12],{12{0}}};  
+                 //control values
+                 ALU_src2_sel = 0;
+                 Rd_data_src_sel = 0;
+                 branch = 0;
                  end 
       //JAL  
       7'b1101111:begin
-                
+                 Imm = {instr[31],instr[7],instr[30:25],instr[11:08]};
                  end
       //JALR
       7'b1100111:begin
-                
+                 Imm = {instr[31],instr[7],instr[30:25],instr[11:08]};
                  end 
       //ecall ebreak 
       7'b1110011:begin
