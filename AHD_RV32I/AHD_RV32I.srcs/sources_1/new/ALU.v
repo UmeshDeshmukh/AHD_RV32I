@@ -17,12 +17,12 @@ module ALU(
      4'b0110: result_out = input1 | input2; //OR ORI
      4'b0100: result_out = input1 ^ input2; //XOR XORI
      4'b0010: result_out = (input1 < input2)?1:0; //SLT set less than
-     4'bXXXX: zero = (input1 == input2)?1:0;//BEQ
-     4'bXXXX: zero = (input1 != input2)?1:0;//BNE
-     4'bXXXX: zero = (input1 >= input2)?1:0;//BGE BGEU
-     4'bXXXX: zero = (input1 < input2)?1:0;//BLTU BLT
+     4'b0011: zero = (input1 == input2)?1:0;//BEQ
+     4'b0101: zero = (input1 != input2)?1:0;//BNE
+     4'b1000: zero = (input1 >= input2)?1:0;//BGE BGEU
+     4'b1010: zero = (input1 < input2)?1:0;//BLTU BLT
      
-     4'b0001: begin   //SLL SLLI
+     4'b1011: begin   //SLL SLLI
          result_out = (input2[4:0] == 5'b00001)?{input1[30:0],input1[31]}:
          (input2[4:0] == 5'b00010)?{input1[29:0],input1[31:30]}:
          (input2[4:0] == 5'b00011)?{input1[28:0],input1[31:29]}:
@@ -56,7 +56,7 @@ module ALU(
 	     (input2[4:0] == 5'b11111)?{input1[0],input1[31:01]}:
 	      input1;
 	      end
-	 4'b0101: begin   //SRL SRLI  
+	 4'b1101: begin   //SRL SRLI  
           result_out = (input2[4:0] == 5'b00001)?{input1[0],input1[31:5'b00001]}:
           (input2[4:0] == 5'b00010)?{input1[5'b00010 -1:0],input1[31:5'b00010]}: 
           (input2[4:0] == 5'b00011)?{input1[5'b00011 -1:0],input1[31:5'b00011]}:
@@ -91,7 +91,7 @@ module ALU(
 	       input1;
 	      end 
 	      
-	 4'b0000:begin   //SRA SRAI
+	 4'b1100:begin   //SRA SRAI
 	      result_out =(input2[4:0] == 5'b00001)?{input1[31],input1[31:1]}:
                       (input2[4:0] == 5'b00010)?{{02{input1[31]}},input1[31:02]}: 
                       (input2[4:0] == 5'b00011)?{{03{input1[31]}},input1[31:03]}:
@@ -124,8 +124,8 @@ module ALU(
 	                  (input2[4:0] == 5'b11110)?{{30{input1[31]}},input1[31:30]}:
 	                  (input2[4:0] == 5'b11111)?{{31{input1[31]}},input1[31]}:
 	                   input1;	      
-	       
-	      end        
+	       end
+	               
     endcase
     end
     

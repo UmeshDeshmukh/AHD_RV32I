@@ -3,18 +3,18 @@
 
 
 module Instr_decoder(
-    input wire clk,
+    //input wire clk,
     input wire[31:0] instr,
     
-    output reg ALU_op,
+    output reg[3:0] ALU_op,
     output reg branch, 
     output reg ALU_src2_sel,
     output reg Rd_data_src_sel,
     output reg DMem_wr_en,
     
-    output reg src1_addr,
-    output reg src2_addr,
-    output reg dest_addr,    
+    output reg[4:0] src1_addr,
+    output reg[4:0] src2_addr,
+    output reg[4:0] dest_addr,    
     output reg[19:0] Imm_out,
     output reg[31:0] U_imm_out,
     output reg extend
@@ -163,6 +163,8 @@ module Instr_decoder(
                  src1_addr = instr[19:15];
                  src2_addr = instr[24:20];
                  Imm_out = {instr[31:25],instr[11:07]};
+                 
+                 ALU_op = 4'b0000;
                  case(instr[14:12])
                   //SB
                   3'b000:begin

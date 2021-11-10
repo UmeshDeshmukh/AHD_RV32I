@@ -6,7 +6,7 @@ module Inst_mem(
     input wire[31:0] Inst_addr,
     output reg[31:0] Inst 
     );
-    reg[31:0]IMem[31:0];
+    reg[31:0]IMem[511:0];
     
     always @(posedge clk)begin
      Inst <= IMem[Inst_addr]; 
