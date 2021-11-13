@@ -1,26 +1,120 @@
+`default_nettype none
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 09.11.2021 14:06:09
-// Design Name: 
-// Module Name: lsu
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
 
 
 module lsu(
-
+    input wire clk,rst,
+    //signals from/to ALU,decoder...
+    input wire[1:0] data_type,
+    input wire lsu_op,sign_ext,
+    input wire[31:0]write_data,
+    input wire[31:0]address_i,
+    output reg[31:0]read_data_o,
+    //Memory side signals
+    input wire wr_en,
+    input wire[31:0]read_data_i
+    
     );
+    wire[1:0]data_offset;
+    reg[31:0]b_read, hw_read, w_read;
+    /*data_offset
+    2'b00->0 byte
+    2'b01->1 byte
+    2'b10->2 byte
+    2'b11->3 byte*/
+    // sign extension
+    /*data_type
+    2'b00->byte 
+    2'b01->half word
+    2'b10->word*/
+    
+    // sign/zero extension for byte
+    always @* begin
+     case(data_offset)
+      2'b00:begin
+             if(!sign_ext)begin
+               b_read = {{24{0}},{read_data_i[7:0]}};    
+               end
+             else begin
+               b_read = {{24{read_data_i[7]}},{read_data_i[7:0]}}; 
+               end     
+            end
+      2'b01:begin
+             if(!sign_ext)begin
+               b_read = {{24{0}},{read_data_i[15:8]}};    
+               end
+             else begin
+               b_read = {{24{read_data_i[15]}},{read_data_i[15:8]}}; 
+               end     
+            end
+      2'b10:begin
+             if(!sign_ext)begin
+               b_read = {{24{0}},{read_data_i[23:16]}};    
+               end
+             else begin
+               b_read = {{24{read_data_i[23]}},{read_data_i[23:16]}}; 
+               end     
+            end
+      2'b11:begin
+             if(!sign_ext)begin
+               b_read = {{24{0}},{read_data_i[31:24]}};    
+               end
+             else begin
+               b_read = {{24{read_data_i[31]}},{read_data_i[31:24]}}; 
+               end     
+            end
+      default:b_read = {{24{0}},{read_data_i[7:0]}};      
+     endcase
+     
+     // sign/zero extension for half word
+     
+    always @* begin
+     case(data_offset)
+      2'b00:begin
+             if(!sign_ext)begin
+               hw_read = {{16{0}},{read_data_i[15:0]}};    
+               end
+             else begin
+               hw_read = {{16{read_data_i[15]}},{read_data_i[15:0]}}; 
+               end     
+            end
+      2'b01:begin
+             if(!sign_ext)begin
+               hw_read = {{16{0}},{read_data_i[23:8]}};    
+               end
+             else begin
+               hw_read = {{16{read_data_i[23]}},{read_data_i[23:8]}}; 
+               end     
+            end
+      2'b10:begin
+             if(!sign_ext)begin
+               hw_read = {{16{0}},{read_data_i[31:16]}};    
+               end
+             else begin
+               hw_read = {{16{read_data_i[31]}},{read_data_i[31:16]}}; 
+               end     
+            end
+      2'b11:begin
+             if(!sign_ext)begin
+               hw_read = {{16{0}},{read_data_i[31:24]}};    
+               end
+             else begin
+               hw_read = {{16{read_data_i[31]}},{read_data_i[7:0]},{read_data_i[31:24]}}; 
+               end     
+            end
+      default:hw_read = {{16{0}},{read_data_i[15:0]}};      
+     endcase
+     
+     always @(*)begin
+      case(data_type)
+      2'b00:read_data_o = b_read;//->byte 
+      2'b01:read_data_o = hw_read;//->half word
+      2'b10:read_data_o = read_data_i[31:0];//->word
+      default:read_data_o = read_data_i[31:0];
+      endcase
+     end
+    end
+    
+    
+    
 endmodule
