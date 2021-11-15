@@ -3,6 +3,6 @@
 
 
 module Data_ext(
-    input data_in; 
+    /*input data_in; */
     );
 endmodule
