@@ -5,13 +5,13 @@ module PC_adder(
     input wire clk,
     input wire[31:0] imm, ALU_res,
     output reg[31:0] curr_PC,
-    input wire[31:0] nxt_PC
+    input wire[1:0]PC_src_sel
     );
     reg[31:0]PC1,PC2;
-    
+    reg[31:0] nxt_PC;
     always @(posedge clk)begin
     
-     curr_PC = nxt_PC;
+     curr_PC <= nxt_PC;
     end
     
     always @* begin
@@ -21,4 +21,15 @@ module PC_adder(
     always @* begin
      PC2 = curr_PC + imm;
     end
+    
+    always @* begin
+    case(PC_src_sel)
+     2'b00: nxt_PC = PC1;
+     2'b01: nxt_PC = PC2;
+     2'b10: nxt_PC = ALU_res;
+     default:nxt_PC = PC1;
+    endcase
+    end
+       
+    
 endmodule

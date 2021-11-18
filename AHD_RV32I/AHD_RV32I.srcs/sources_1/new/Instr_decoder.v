@@ -7,9 +7,10 @@ module Instr_decoder(
     input wire[31:0] instr,
     //Control signals
     output reg[3:0] ALU_op,
-    output reg branch, 
+    output reg branch,
+    output reg ALU_src1_sel, 
     output reg ALU_src2_sel,
-    output reg Rd_data_src_sel,
+    output reg[1:0] Rd_data_src_sel,
     output reg DMem_wr_en,
     //Signals to RF
     output reg[4:0] src1_addr,
@@ -21,7 +22,8 @@ module Instr_decoder(
     //Signal to immediate ext    
     output reg[19:0] Imm_out,
     output reg[31:0] U_imm_out,
-    output reg extend
+    output reg extend,
+    output reg halt
     );
     reg[11:0] Imm;
       
@@ -36,6 +38,7 @@ module Instr_decoder(
                   dest_addr = instr[11:07]; 
                   //control values
                   ALU_src2_sel = 0;
+                  ALU_src1_sel = 0;
                   Rd_data_src_sel = 0;
                   branch = 0;
                   case(instr[14:12])
@@ -51,11 +54,11 @@ module Instr_decoder(
                           end 
                    //SLL       
                    3'b001:begin 
-                           
+                           ALU_op = 4'b1011;
                           end  
                    //SLT       
                    3'b010:begin 
-                           
+                           ALU_op = 4'b0010;
                           end
                    //SLTU       
                    3'b011:begin 
@@ -69,9 +72,11 @@ module Instr_decoder(
                    3'b100:begin 
                           //SRA 
                            if(instr[30])begin
+                           ALU_op = 4'b1100;
                             end
                            //SRL 
                            else begin
+                            ALU_op = 4'b1101;
                             end
                           end
                    //OR       
@@ -91,6 +96,7 @@ module Instr_decoder(
                   Imm_out = instr[31:20];
                   dest_addr = instr[11:07];                                   
                   //control values
+                  ALU_src1_sel = 0;
                   ALU_src2_sel = 1;
                   Rd_data_src_sel = 0;
                   branch = 0;
@@ -101,11 +107,11 @@ module Instr_decoder(
                           end 
                    //SLLI       
                    3'b001:begin 
-                          
+                          ALU_op = 4'b1011;
                           end  
                    //SLTI       
                    3'b010:begin 
-                          
+                          ALU_op = 4'b0010;
                           end
                    //SLTUI       
                    3'b011:begin 
@@ -119,10 +125,12 @@ module Instr_decoder(
                    3'b100:begin 
                           //SRAI 
                            if(instr[30])begin
+                           ALU_op = 4'b1100;
                             end
                            //SRLI 
                            else begin
-                            end
+                           ALU_op = 4'b1101;
+                           end
                           end
                    //ORI       
                    3'b110:begin 
@@ -141,8 +149,9 @@ module Instr_decoder(
                   Imm_out = instr[31:20];
                   dest_addr = instr[11:07];                                   
                   //control values
+                  ALU_src1_sel = 0;
                   ALU_src2_sel = 1;
-                  Rd_data_src_sel = 0;
+                  Rd_data_src_sel = 1;
                   branch = 0;
                   ALU_op = 4'b0000;
                  case(instr[14:12])
@@ -183,7 +192,9 @@ module Instr_decoder(
                  src1_addr = instr[19:15];
                  src2_addr = instr[24:20];
                  Imm_out = {instr[31:25],instr[11:07]};
-                 
+                 //control values
+                 ALU_src1_sel = 0;
+                 ALU_src2_sel = 1;
                  ALU_op = 4'b0000;
                  lsu_op = 1;  //store instr.
                  case(instr[14:12])
@@ -210,6 +221,7 @@ module Instr_decoder(
                  src2_addr = instr[24:20];
                  Imm_out = {instr[31],instr[7],instr[30:25],instr[11:08]};  
                  //control values
+                  ALU_src1_sel = 0;
                   ALU_src2_sel = 0;
                   Rd_data_src_sel = 0;
                   branch = 1;                
@@ -246,8 +258,7 @@ module Instr_decoder(
                  dest_addr = instr[11:07];
                  U_imm_out = {instr[31:12],{12{0}}};  
                  //control values
-                 ALU_src2_sel = 0;
-                 Rd_data_src_sel = 0;
+                 Rd_data_src_sel = 2;
                  branch = 0;
                  
                  end
@@ -257,7 +268,7 @@ module Instr_decoder(
                  U_imm_out = {instr[31:12],{12{0}}};  
                  //control values
                  ALU_src2_sel = 0;
-                 Rd_data_src_sel = 0;
+                 Rd_data_src_sel = 3;
                  branch = 0;
                  end 
       //JAL  
@@ -270,9 +281,20 @@ module Instr_decoder(
                  end 
       //ecall ebreak 
       7'b1110011:begin
-                
+                 //ecall
+                 if(instr[14:12]== 0 & instr[31:20]==000000000000)
+                  begin
+                  halt = 1;
+                  end 
+                 //ebreak 
+                 else if(instr[14:12]== 0 & instr[31:20]==000000000001)
+                  begin
+                  halt = 1;
+                  end
                  end                                                                                            
+      //Illegal instruction
       default:begin
+              halt = 1;
               end           
      endcase
     end
