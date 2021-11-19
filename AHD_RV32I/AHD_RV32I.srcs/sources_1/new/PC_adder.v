@@ -5,13 +5,13 @@ module PC_adder(
     input wire clk,
     input wire[31:0] imm, ALU_res,
     output reg[31:0] curr_PC,
-    input wire[1:0]PC_src_sel
+    input wire[1:0]PC_src_sel,
+    input wire halt
     );
     reg[31:0]PC1,PC2;
     reg[31:0] nxt_PC;
     always @(posedge clk)begin
-    
-     curr_PC <= nxt_PC;
+     if(!halt)curr_PC <= nxt_PC;
     end
     
     always @* begin

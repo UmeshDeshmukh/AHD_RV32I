@@ -11,6 +11,7 @@ module Instr_decoder(
     output reg ALU_src1_sel, 
     output reg ALU_src2_sel,
     output reg[1:0] Rd_data_src_sel,
+    output reg PC_src_sel,
     output reg DMem_wr_en,
     //Signals to RF
     output reg[4:0] src1_addr,
@@ -86,7 +87,10 @@ module Instr_decoder(
                    //AND       
                    3'b111:begin 
                           ALU_op = 4'b0111;
-                          end                                   
+                          end
+                   default:begin 
+                           ALU_op = 4'b1011;
+                          end                                          
                   endcase
                  end
       //I type instruction           
@@ -139,7 +143,10 @@ module Instr_decoder(
                    //ANDI       
                    3'b111:begin 
                           ALU_op = 4'b0111;
-                          end                                   
+                          end
+                   default:begin
+                          ALU_op = 4'b0000;
+                          end                                          
                   endcase
                  end
       //I type load instruction           
@@ -184,7 +191,12 @@ module Instr_decoder(
                          data_type = 2'b01;//unsigned half-word
                          sign_ext  = 0;    //unsigned
                          lsu_op    = 0;    //load instr.
-                         end                     
+                         end   
+                  default:begin
+                         data_type = 2'b00;//byte
+                         sign_ext  = 1;    //signed
+                         lsu_op    = 0;    //load instr.
+                         end                         
                  endcase
                  end
       //S type instruction   
@@ -195,6 +207,7 @@ module Instr_decoder(
                  //control values
                  ALU_src1_sel = 0;
                  ALU_src2_sel = 1;
+                 DMem_wr_en =1;
                  ALU_op = 4'b0000;
                  lsu_op = 1;  //store instr.
                  case(instr[14:12])
@@ -213,6 +226,7 @@ module Instr_decoder(
                          data_type = 2'b10;//unsigned word
                        //sign_ext  = 0;    //unsigned
                          end
+                  default:data_type = 2'b00;
                  endcase
                  end
       //B type instruction   
@@ -249,7 +263,8 @@ module Instr_decoder(
                   //BGEU
                   3'b111:begin
                          ALU_op = 4'b1000;
-                         end                            
+                         end  
+                  default:ALU_op = 4'b0011;                                 
                  endcase
                 
                  end
@@ -274,10 +289,12 @@ module Instr_decoder(
       //JAL  
       7'b1101111:begin
                  Imm = {instr[31],instr[7],instr[30:25],instr[11:08]};
+                 Rd_data_src_sel = 3;
                  end
       //JALR
       7'b1100111:begin
                  Imm = {instr[31],instr[7],instr[30:25],instr[11:08]};
+                 Rd_data_src_sel = 3;
                  end 
       //ecall ebreak 
       7'b1110011:begin
