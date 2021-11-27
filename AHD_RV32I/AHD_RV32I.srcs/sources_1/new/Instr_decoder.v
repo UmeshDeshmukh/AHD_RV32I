@@ -27,9 +27,30 @@ module Instr_decoder(
     output reg halt
     );
     reg[11:0] Imm;
-      
+    initial begin
+    src1_addr = 0;
+    src2_addr = 0;
+    dest_addr = 0;
+    end  
     
     always @* begin
+     src1_addr = 0;
+     src2_addr = 0;
+     dest_addr = 0;
+     ALU_op = 0;
+     branch = 0;
+     ALU_src1_sel = 0; 
+     ALU_src2_sel = 0;
+     Rd_data_src_sel = 0;
+     PC_src_sel = 0;
+     DMem_wr_en = 0;
+     data_type = 0;
+     lsu_op = 0;
+     sign_ext = 0;
+     Imm_out = 0;
+     U_imm_out = 0;
+     extend = 0;
+     halt = 0;
      case(instr[6:0])
       //R type instruction
       7'b0110011:begin
@@ -89,7 +110,7 @@ module Instr_decoder(
                           ALU_op = 4'b0111;
                           end
                    default:begin 
-                           ALU_op = 4'b1011;
+                           ALU_op = 4'b0000;
                           end                                          
                   endcase
                  end
@@ -308,6 +329,7 @@ module Instr_decoder(
                   begin
                   halt = 1;
                   end
+                 else halt =1; 
                  end                                                                                            
       //Illegal instruction
       default:begin

@@ -1,8 +1,2 @@
 Vivado Simulator 2020.1
 Time resolution is 1 ps
-The test case did not pass for instruction beq
-The test case did not pass for instruction lui
-The test case did not pass for instruction auipc
-The test case did not pass for instruction jal
-The test case did not pass for instruction jalr
-All test cases passed

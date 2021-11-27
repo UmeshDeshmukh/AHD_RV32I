@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 
-module lsu(
+module LSU(
     input wire clk,rst,
     //signals from/to ALU,decoder...
     input wire[1:0] data_type,

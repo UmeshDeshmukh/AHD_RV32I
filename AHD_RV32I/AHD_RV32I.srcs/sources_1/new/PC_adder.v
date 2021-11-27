@@ -2,16 +2,20 @@
 `timescale 1ns / 1ps
 
 module PC_adder(
-    input wire clk,
+    input wire clk,rst,
     input wire[31:0] imm, ALU_res,
-    output reg[31:0] curr_PC,
     input wire[1:0]PC_src_sel,
-    input wire halt
+    input wire halt,
+    output wire[31:0] PC_o
     );
     reg[31:0]PC1,PC2;
-    reg[31:0] nxt_PC;
+    reg[31:0]curr_PC, nxt_PC;
+            
     always @(posedge clk)begin
+    if(!rst)
      if(!halt)curr_PC <= nxt_PC;
+     else curr_PC <= curr_PC;
+    else curr_PC = 0;
     end
     
     always @* begin
@@ -31,5 +35,6 @@ module PC_adder(
     endcase
     end
        
+    assign PC_o = curr_PC;
     
 endmodule

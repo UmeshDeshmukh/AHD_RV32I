@@ -7,16 +7,27 @@ module Data_mem(
     input wire[31:0] Data_addr,
     input wire[31:0] DMem_wr_data,
     output wire[31:0] DMem_rd_data 
-    );
-    
-    
+    );     
     
     parameter DMem_size = 2048;
     
-    reg[7:0] DMem0[127:0];
-    reg[7:0] DMem1[127:0];
-    reg[7:0] DMem2[127:0];
-    reg[7:0] DMem3[127:0];
+    reg[7:0] DMem0[(DMem_size/4)-1:0];
+    reg[7:0] DMem1[(DMem_size/4)-1:0];
+    reg[7:0] DMem2[(DMem_size/4)-1:0];
+    reg[7:0] DMem3[(DMem_size/4)-1:0];
+    
+    integer i,j;
+    initial begin
+     //integer i,j,k,l;
+     //DMem0[0]=0;DMem1[0]=1;DMem2[0]=0;DMem3[0]=0;
+     for(i=0;i<=((DMem_size/4)-1);i=i+1)begin
+      j = i*4;
+      DMem0[i]=j;
+      DMem1[i]=j+1;
+      DMem2[i]=j+2;
+      DMem3[i]=j+3;
+     end
+    end
         
     //synchronous memory write 
     always @(posedge clk)begin
