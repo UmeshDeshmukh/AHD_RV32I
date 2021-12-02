@@ -3,7 +3,7 @@
 
 module PC_adder(
     input wire clk,rst,
-    input wire[31:0] imm, ALU_res,
+    input wire[31:0] imm_in, ALU_res,
     input wire[1:0]PC_src_sel,
     input wire halt,
     output wire[31:0] PC_o
@@ -23,7 +23,7 @@ module PC_adder(
     end
     
     always @* begin
-     PC2 = curr_PC + imm;
+     PC2 = curr_PC + imm_in;
     end
     
     always @* begin

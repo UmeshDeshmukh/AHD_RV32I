@@ -24,15 +24,23 @@ module Instr_decoder(
     output reg[19:0] Imm_out,
     output reg[31:0] U_imm_out,
     output reg extend,
-    output reg halt
+    output reg halt,
+    
+    output wire[31:0] imm_i_type_o,
+    output wire[31:0] imm_s_type_o,
+    output wire[31:0] imm_b_type_o,
+    output wire[31:0] imm_u_type_o,
+    output wire[31:0] imm_j_type_o
+    
     );
     reg[11:0] Imm;
-    initial begin
-    src1_addr = 0;
-    src2_addr = 0;
-    dest_addr = 0;
-    end  
     
+    assign imm_i_type_o = { {20{instr[31]}}, instr[31:20] };
+    assign imm_s_type_o = { {20{instr[31]}}, instr[31:25], instr[11:7] };
+    assign imm_b_type_o = { {19{instr[31]}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0 };
+    assign imm_u_type_o = { instr[31:12], 12'b0 };
+    assign imm_j_type_o = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
+        
     always @* begin
      src1_addr = 0;
      src2_addr = 0;
@@ -256,8 +264,8 @@ module Instr_decoder(
                  src2_addr = instr[24:20];
                  Imm_out = {instr[31],instr[7],instr[30:25],instr[11:08]};  
                  //control values
-                  ALU_src1_sel = 0;
-                  ALU_src2_sel = 0;
+                  ALU_src1_sel = 1;
+                  ALU_src2_sel = 1;
                   Rd_data_src_sel = 0;
                   branch = 1;                
                   case(instr[14:12])

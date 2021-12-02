@@ -21,6 +21,12 @@ module top(input wire clk,
        reg[1:0] Rd_data_src_sel;
        reg PC_src_sel;
        reg DMem_wr_en;
+       wire[31:0] imm_i_type_o;
+       wire[31:0] imm_s_type_o;
+       wire[31:0] imm_b_type_o;
+       wire[31:0] imm_u_type_o;
+       wire[31:0] imm_j_type_o;
+       reg[2:0]imm_sel; 
        //Signals to RF
        /*reg[4:0] src1_addr;
        reg[4:0] src2_addr;
@@ -72,16 +78,32 @@ module top(input wire clk,
        .Imm_out(Imm_out),
        .U_imm_out(U_imm_out),
        .extend(extend),
-       .halt(halt));
+       .halt(halt),
+       .imm_i_type_o(imm_i_type_o),
+       .imm_s_type_o(imm_s_type_o),
+       .imm_b_type_o(imm_b_type_o),
+       .imm_u_type_o(imm_u_type_o),
+       .imm_j_type_o(imm_j_type_o)
+       );
        
        R_File rf(.Rs1_addr(rs1_addr),.Rs2_addr(rs2_addr),.Rd_addr(rd_addr),
                  .Rs1_data(rs1_data),.Rs2_data(rs2_data),.Rd_data(rd_data));   
                                
-       Imm_ext ext_imm(.imm(imm_val),.ext_out(imm_out));
+       Imm_ext ext_imm(
+       .imm_i_type_o(imm_i_type_o),
+       .imm_s_type_o(imm_s_type_o),
+       .imm_b_type_o(imm_b_type_o),
+       .imm_u_type_o(imm_u_type_o),
+       .imm_j_type_o(imm_j_type_o),
+       .imm_in(imm_val),
+       .imm_out(imm_out),
+       .imm_sel(imm_sel));
        
-       MUX32 ALU_src2_mux(.mux_in1(rs2_data),.mux_in2(imm_out),.mux_out(ALU_in2),.m_sel());   
+       MUX32 ALU_src2_mux(.mux_in1(rs2_data),.mux_in2(imm_out),.mux_out(ALU_in2),.m_sel(ALU_src2_sel));
+       
+       MUX32 ALU_src1_mux(.mux_in1(rs1_data),.mux_in2(PC_o),.mux_out(ALU_in1),.m_sel(ALU_src1_sel));   
                                        
-       ALU alu(.input1(ALU_in1),.input2(ALU_in2),.result_out(ALU_result),.zero(zero),.ALU_op());                  
+       ALU alu(.input1(ALU_in1),.input2(ALU_in2),.result_out(ALU_result),.zero(zero),.ALU_op(ALU_op));                  
        //MUX32 Rd_src_mux(.mux_in1(result),.mux_in2(dm_data),.mux_out(rd_data1),.m_sel());
        
        LSU lsu(
@@ -110,7 +132,7 @@ module top(input wire clk,
        PC_adder pc_adder(
        .clk(clk),
 	   .rst(rst),
-       .imm(imm), 
+       .imm_in(imm_out), 
 	   .ALU_res(ALU_result),
        .PC_src_sel(PC_src_sel),
        .halt(halt),
