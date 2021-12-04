@@ -1,9 +1,10 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-
+parameter fetch =0 , decode=1 , execute=2 , writeback=3, idle=4;
+parameter R_type =0 , I_type=1 , S_type=2 , B_type=3, U_type=4, J_type=5;
 module Instr_decoder(
-    //input wire clk,
+    input wire clk,
     input wire[31:0] instr,
     //Control signals
     output reg[3:0] ALU_op,
@@ -30,10 +31,15 @@ module Instr_decoder(
     output wire[31:0] imm_s_type_o,
     output wire[31:0] imm_b_type_o,
     output wire[31:0] imm_u_type_o,
-    output wire[31:0] imm_j_type_o
-    
+    output wire[31:0] imm_j_type_o,
+    // signals from FSM
+    output reg pc_en,
+    output reg rf_en,
+    output reg dm_en 
     );
     reg[11:0] Imm;
+    reg[2:0]fsm_state,next_fsm_state;
+    reg[2:0]instr_typ;
     
     assign imm_i_type_o = { {20{instr[31]}}, instr[31:20] };
     assign imm_s_type_o = { {20{instr[31]}}, instr[31:25], instr[11:7] };
@@ -62,6 +68,7 @@ module Instr_decoder(
      case(instr[6:0])
       //R type instruction
       7'b0110011:begin
+                  instr_typ <= R_type; 
                   //datapath values
                   src1_addr = instr[19:15];
                   src2_addr = instr[24:20];
@@ -124,6 +131,7 @@ module Instr_decoder(
                  end
       //I type instruction           
       7'b0010011:begin
+                  instr_typ <= I_type;
                   //datapath values
                   src1_addr = instr[19:15];
                   Imm_out = instr[31:20];
@@ -180,6 +188,7 @@ module Instr_decoder(
                  end
       //I type load instruction           
       7'b0000011:begin
+                 
                  //datapath values
                   src1_addr = instr[19:15];
                   Imm_out = instr[31:20];
@@ -230,6 +239,7 @@ module Instr_decoder(
                  end
       //S type instruction   
       7'b0100011:begin
+                 instr_typ <= S_type;
                  src1_addr = instr[19:15];
                  src2_addr = instr[24:20];
                  Imm_out = {instr[31:25],instr[11:07]};
@@ -260,6 +270,7 @@ module Instr_decoder(
                  end
       //B type instruction   
       7'b1100011:begin
+                 instr_typ <= B_type;
                  src1_addr = instr[19:15];
                  src2_addr = instr[24:20];
                  Imm_out = {instr[31],instr[7],instr[30:25],instr[11:08]};  
@@ -299,6 +310,7 @@ module Instr_decoder(
                  end
       //U type instruction1  LUI         
       7'b0110111:begin
+                 instr_typ <= U_type;
                  dest_addr = instr[11:07];
                  U_imm_out = {instr[31:12],{12{0}}};  
                  //control values
@@ -308,6 +320,7 @@ module Instr_decoder(
                  end
       //U type instruction2  AUIPC         
       7'b0010111:begin
+                 instr_typ <= U_type;
                  dest_addr = instr[11:07];
                  U_imm_out = {instr[31:12],{12{0}}};  
                  //control values
@@ -317,11 +330,13 @@ module Instr_decoder(
                  end 
       //JAL  
       7'b1101111:begin
+                 instr_typ <= J_type;  
                  Imm = {instr[31],instr[7],instr[30:25],instr[11:08]};
                  Rd_data_src_sel = 3;
                  end
       //JALR
       7'b1100111:begin
+                 instr_typ <= J_type;
                  Imm = {instr[31],instr[7],instr[30:25],instr[11:08]};
                  Rd_data_src_sel = 3;
                  end 
@@ -345,4 +360,54 @@ module Instr_decoder(
               end           
      endcase
     end
-endmodule
+    
+    //FSM for control unit
+    //parameter fetch =0 , decode=1 , execute=2 , writeback=3, idle=4;
+    /*output reg pc_en,
+    output reg rf_en,
+    output reg dm_en */
+    always @(posedge clk)begin
+     pc_en <= 0;
+     rf_en <= 0;
+     dm_en <= 0;
+     case(fsm_state)
+     fetch:if(!halt)begin
+            pc_en <= 1;
+            next_fsm_state<= decode;
+            end
+           else next_fsm_state<= idle;
+     decode:if(!halt)begin
+            pc_en <= 0;
+            next_fsm_state<= execute;
+            end
+           else next_fsm_state<= idle;
+     execute:if(!halt)begin
+            next_fsm_state<= writeback;
+            end
+           else next_fsm_state<= idle;
+     writeback:if(!halt)begin
+            if(instr_typ == R_type)rf_en <=1;
+            else if(instr_typ == R_type)dm_en <=1;
+            else begin
+             rf_en <= 0;
+             dm_en <= 0;
+            end
+            next_fsm_state<= idle;
+            end
+           else next_fsm_state<= fetch;
+     idle:if(!halt)begin
+            next_fsm_state<= fetch;
+            end
+           else next_fsm_state<= idle;
+     default:next_fsm_state<= idle;    
+    endcase
+    end
+    
+    always @* begin
+     fsm_state <= next_fsm_state;
+    end  
+   endmodule
+
+
+
+

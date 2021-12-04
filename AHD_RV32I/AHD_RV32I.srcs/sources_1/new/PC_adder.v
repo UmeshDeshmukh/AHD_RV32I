@@ -2,10 +2,10 @@
 `timescale 1ns / 1ps
 
 module PC_adder(
-    input wire clk,rst,
+    input wire clk,rst,pc_en,
     input wire[31:0] imm_in, ALU_res,
     input wire[1:0]PC_src_sel,
-    input wire halt,
+    input wire halt,pc_en,
     output wire[31:0] PC_o
     );
     reg[31:0]PC1,PC2;
