@@ -13,8 +13,12 @@ module PC_adder(
             
     always @(posedge clk)begin
     if(!rst)
-     if(!halt)curr_PC <= nxt_PC;
-     else curr_PC <= curr_PC;
+     if(pc_en == 1)begin
+      //if(!halt)curr_PC <= nxt_PC;
+      //else curr_PC <= curr_PC;
+      curr_PC <= nxt_PC;
+      end
+     else curr_PC <= curr_PC; 
     else curr_PC = 0;
     end
     

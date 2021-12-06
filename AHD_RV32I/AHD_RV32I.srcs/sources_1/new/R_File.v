@@ -3,7 +3,8 @@
 
 module R_File(
     input wire clk,
-    input wire rf_wr_en,
+    input wire rf_wr_en,rf_en,
+    
     input wire[4:0] Rs1_addr,
     input wire[4:0] Rs2_addr,
     input wire[4:0] Rd_addr,
@@ -47,7 +48,7 @@ module R_File(
     
     always @(posedge clk)begin
      
-     if(rf_wr_en) begin
+     if(rf_wr_en && rf_en) begin
       if(Rd_addr != 0)begin
        reg_file[Rd_addr] <= Rd_data;
       end

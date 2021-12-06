@@ -385,26 +385,27 @@ module Instr_decoder(
             next_fsm_state<= writeback;
             end
            else next_fsm_state<= idle;
-     writeback:if(!halt)begin
+     writeback:
+           if(!halt)begin
             if(instr_typ == R_type)rf_en <=1;
             else if(instr_typ == R_type)dm_en <=1;
             else begin
              rf_en <= 0;
              dm_en <= 0;
             end
-            next_fsm_state<= idle;
+            next_fsm_state <= idle;
             end
-           else next_fsm_state<= fetch;
+           else next_fsm_state <= fetch;
      idle:if(!halt)begin
-            next_fsm_state<= fetch;
+            next_fsm_state <= fetch;
             end
-           else next_fsm_state<= idle;
-     default:next_fsm_state<= idle;    
+           else next_fsm_state <= idle;
+     default:next_fsm_state <= idle;    
     endcase
     end
     
     always @* begin
-     fsm_state <= next_fsm_state;
+     fsm_state = next_fsm_state;
     end  
    endmodule
 

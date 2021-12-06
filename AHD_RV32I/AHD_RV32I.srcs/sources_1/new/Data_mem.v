@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 module Data_mem(
-    input wire clk, DMem_wr_en,
+    input wire clk, DMem_wr_en, dm_en,
     input wire[3:0] byte_en,
     input wire[31:0] Data_addr,
     input wire[31:0] DMem_wr_data,
@@ -31,7 +31,7 @@ module Data_mem(
         
     //synchronous memory write 
     always @(posedge clk)begin
-     if(DMem_wr_en)begin
+     if(DMem_wr_en && dm_en)begin
       if(byte_en[0])DMem0[Data_addr] <= DMem_wr_data[07:00];
       if(byte_en[1])DMem1[Data_addr] <= DMem_wr_data[15:08];
       if(byte_en[2])DMem2[Data_addr] <= DMem_wr_data[23:16];
