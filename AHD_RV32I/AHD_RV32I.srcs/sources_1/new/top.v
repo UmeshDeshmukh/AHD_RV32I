@@ -52,7 +52,8 @@ module top(input wire clk,
        wire[31:0]write_data_o;
        
        wire[31:0] imm;
-       wire[31:0] PC_o;      
+       wire[31:0] PC_o; 
+       wire[31:0]PC_o_4;  	   
        
        Inst_mem im(.clk(clk),.Inst_addr(PC_o),.Inst(instruction));
          
@@ -136,6 +137,7 @@ module top(input wire clk,
 	   .ALU_res(ALU_result),
        .PC_src_sel(PC_src_sel),
        .halt(halt),
-       .PC_o(PC_o));                         
+       .PC_o(PC_o),
+	   .PC_o_4(PC_o_4));                         
                           
 endmodule

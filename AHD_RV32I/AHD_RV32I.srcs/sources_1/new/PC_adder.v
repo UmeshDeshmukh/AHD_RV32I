@@ -6,7 +6,8 @@ module PC_adder(
     input wire[31:0] imm_in, ALU_res,
     input wire[1:0]PC_src_sel,
     input wire halt,pc_en,
-    output wire[31:0] PC_o
+    output wire[31:0] PC_o,
+	output wire[31:0]PC_o_4
     );
     reg[31:0]PC1,PC2;
     reg[31:0]curr_PC, nxt_PC;
@@ -40,5 +41,5 @@ module PC_adder(
     end
        
     assign PC_o = curr_PC;
-    
+    assign PC_o_4 = PC1;
 endmodule
